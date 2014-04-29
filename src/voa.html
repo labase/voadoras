@@ -2,12 +2,15 @@
 <html>
 <head>
     <title>Cartas Voadoras</title>
-    <script src="../../lib/Brython2.1.0rc2/brython.js"></script>
-    <script type="text/python3" src="vista.py">
-
+    <script src="../../lib/Brython2.1.0/brython.js"></script>
+    <script type="text/python3" src="vista.py"></script>
+    <script type="text/python3">
+        from browser import html, doc
+        main(html, doc)
     </script>
 </head>
 <body onload="brython()">
+    <div id="main"></div>
 
 </body>
 </html>

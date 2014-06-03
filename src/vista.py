@@ -1,4 +1,5 @@
 __author__ = 'cetoli'
+from random import shuffle
 #FACE = 'http://upload.wikimedia.org/wikipedia/commons/9/9b/Poker-sm-212-Ks.png'
 FACE = 'http://upload.wikimedia.org/wikipedia/commons/3/36/Playing_card_club_%s.svg'
 CARDS = 'ace 2 3 4 5 6 7 8 9 10 jack2 queen2 king2'.split()
@@ -6,6 +7,8 @@ CH = CV = 80
 FACESVG = 'http://upload.wikimedia.org/wikipedia/commons/7/78/Contemporary_playing_cards.svg'
 FACE = "/lib/cards/%s_of_%s.svg"
 NAIPES = "clubs hearts spades diamonds".split()
+PA = 8
+
 
 class Carta:
     def __init__(self, html, xy, deque, face=FACE % ('ace', 'clubs')):
@@ -19,6 +22,7 @@ class Carta:
         ct.style.transition = "left %fs linear %fs, top %fs linear %fs" % (d, x, d, x)
         deque <= ct
         ct.onclick = self.voa
+        ct.ontransitionend = self.bota
 
     def voa(self, evento):
         self.deque.voa()
@@ -30,16 +34,29 @@ class Carta:
         ct = self.e_carta
         ct.style.left, ct.style.top = xy
 
+    def bota(self, ev=0):
+        self.deque <= self.e_carta
+
+    def voaraqui(self, xy):
+        self.pos = xy
+        ct = self.e_carta
+        ct.style.left, ct.style.top = xy
+
 
 class Deque:
     def __init__(self, html, tela):
         self.tela = tela
         self.deque = [
-            Carta(html, ((n*13+x)*4, 10), self, FACE % (CARDS[x], naipe))
+            Carta(html, ((n*13+x)*PA, 10), self, FACE % (CARDS[x], naipe))
             for n, naipe in enumerate(NAIPES) for x in range(13)]
 
-    def voa(self):
+    def novoa(self):
         [carta.voar((100, 100)) for carta in self.deque[::-1]]
+
+    def voa(self):
+        deque = self.deque[:]
+        shuffle(deque)
+        [carta.voaraqui((10+i*PA, 190)) for i, carta in enumerate(deque)]
 
     def __le__(self, other):
         self.tela <= other

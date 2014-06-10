@@ -1,28 +1,30 @@
 __author__ = 'cetoli'
-from random import shuffle
-#FACE = 'http://upload.wikimedia.org/wikipedia/commons/9/9b/Poker-sm-212-Ks.png'
-FACE = 'http://upload.wikimedia.org/wikipedia/commons/3/36/Playing_card_club_%s.svg'
+from __random import shuffle
 CARDS = 'ace 2 3 4 5 6 7 8 9 10 jack2 queen2 king2'.split()
 CH = CV = 80
-FACESVG = 'http://upload.wikimedia.org/wikipedia/commons/7/78/Contemporary_playing_cards.svg'
 FACE = "/lib/cards/%s_of_%s.svg"
 NAIPES = "clubs hearts spades diamonds".split()
 PA = 8
+SPLASH = None
 
 
 class Carta:
     def __init__(self, html, xy, deque, face=FACE % ('ace', 'clubs')):
-        x, y = self.pos = xy
         self.deque = deque
         ct = self.e_carta = html.IMG(src=face, width=CH, heigth=CV)
+        self.position(xy)
         ct.style.position = "absolute"
         ct.style.left, ct.style.top = xy
-        x /= 8
-        d = 0.6
-        ct.style.transition = "left %fs linear %fs, top %fs linear %fs" % (d, x, d, x)
         deque <= ct
         ct.onclick = self.voa
         ct.ontransitionend = self.bota
+
+    def position(self, xy):
+        x, y = self.pos = xy
+        x /= 32
+        d = 0.2
+        self.e_carta.style.transition = \
+            "left %fs linear %fs, top %fs linear %fs" % (d, x, d, x)
 
     def voa(self, evento):
         self.deque.voa()
@@ -35,10 +37,12 @@ class Carta:
         ct.style.left, ct.style.top = xy
 
     def bota(self, ev=0):
+        SPLASH.html = "onde: %s, foi %s" % (self.pos, self.was)
         self.deque <= self.e_carta
 
     def voaraqui(self, xy):
-        self.pos = xy
+        self.was = self.pos
+        self.position(xy)
         ct = self.e_carta
         ct.style.left, ct.style.top = xy
 
@@ -47,40 +51,24 @@ class Deque:
     def __init__(self, html, tela):
         self.tela = tela
         self.deque = [
-            Carta(html, ((n*13+x)*PA, 10), self, FACE % (CARDS[x], naipe))
+            Carta(html, ((n*13+x)*PA, 50), self, FACE % (CARDS[x], naipe))
             for n, naipe in enumerate(NAIPES) for x in range(13)]
 
     def novoa(self):
         [carta.voar((100, 100)) for carta in self.deque[::-1]]
 
     def voa(self):
-        deque = self.deque[:]
+        deque = self.deque[::-1]
         shuffle(deque)
-        [carta.voaraqui((10+i*PA, 190)) for i, carta in enumerate(deque)]
+        [carta.voaraqui((10+i*PA, 250)) for i, carta in enumerate(deque)]
 
     def __le__(self, other):
         self.tela <= other
 
-
-def tabuleiro(tela, html):
-    tabul = html.DIV()
-    tela <= tabul
-
-
-def embaralha(tela, html):
-    pass
-
-
-def voa(tela, html):
-    pass
-
-
 def main(html, doc):
+    global SPLASH
     tela = doc["main"]
     #html = gui.html
-    splash = html.DIV("VOADORAS")
-    tela <= splash
-    #tabuleiro(tela, html)
-    #embaralha(tela, html)
-    #voa(tela, html)
-    deque = Deque(html, tela)
+    SPLASH = html.DIV("VOADORAS")
+    tela <= SPLASH
+    Deque(html, tela)

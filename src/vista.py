@@ -1,17 +1,19 @@
 __author__ = 'cetoli'
-from __random import shuffle
+from __random import shuffle, choice, random
+
 CARDS = 'ace 2 3 4 5 6 7 8 9 10 jack2 queen2 king2'.split()
 CH = CV = 80
 FACE = "/lib/cards/%s_of_%s.svg"
 NAIPES = "clubs hearts spades diamonds".split()
-PA = 8
+PA = 16
 SPLASH = None
 
 
 class Carta:
+    CLIP = []
     def __init__(self, html, xy, deque, face=FACE % ('ace', 'clubs')):
         self.deque = deque
-        ct = self.e_carta = html.IMG(src=face, width=CH, heigth=CV)
+        ct = self.e_carta = html.IMG(src=face, width=CH, heigth=CV, Class=choice(Carta.CLIP))
         self.position(xy)
         ct.style.position = "absolute"
         ct.style.left, ct.style.top = xy
@@ -65,9 +67,36 @@ class Deque:
     def __le__(self, other):
         self.tela <= other
 
-def main(html, doc):
+def main(html, doc, svg):
+
+    def create_clips(tela):
+        clip_style = ""
+        clips = svg.svg()
+        defs = svg.defs()
+        clips <= defs
+
+        def create_a_clip(a):
+            Carta.CLIP += ["clip%d" % a]
+            #doc[html.HEAD][0] <= html.STYLE(".clip%d {clip-path: url(#clipping%d);}" % (a, a))
+            cs = ".clip%d {clip-path: url(#clipping%d);}\n" % (a, a)
+            pt = "80,0 0,0"
+            pt = "80,0 0,0" + "".join([" %d,%d" % (i, int(random()*40 +20)) for i in range(0,81,10)])
+            clip = svg.clipPath(
+                #svg.polygon(points="0,0 80,0 80,80 60,40 40,50 20,45 0,40"), id="clipping"
+                svg.polygon(points=pt), id="clipping%d" % a
+                )
+            defs <= clip
+            return cs
+        #for clip in range(10):
+        clip_style = "".join([    create_a_clip(clip) for clip in range(10)])
+        doc[html.HEAD][0] <= html.STYLE(clip_style)
+        tela <= clips
+
     global SPLASH
     tela = doc["main"]
+    tela.style.backgroundColor = "green"
+    create_clips(tela)
+    #tela <= clip
     #html = gui.html
     SPLASH = html.DIV("VOADORAS")
     tela <= SPLASH

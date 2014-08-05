@@ -8,7 +8,7 @@ NAIPES = "clubs hearts spades diamonds".split()
 PA = 16
 SPLASH = None
 SHUFFLESPEED = 0.1
-SHUFFLEFACTOR = 64
+SHUFFLEFACTOR = 128
 
 
 class Carta:

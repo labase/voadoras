@@ -1,11 +1,13 @@
 __author__ = 'cetoli'
 from __random import shuffle, choice, random
+from browser.ajax import ajax
 
 CARDS = 'ace 2 3 4 5 6 7 8 9 10 jack2 queen2 king2'.split()
 CH = CV = 80
 FACE = "/lib/cards/%s_of_%s.svg"
 NAIPES = "clubs hearts spades diamonds".split()
 PA = 16
+PB = 75
 SPLASH = None
 SHUFFLESPEED = 0.1
 SHUFFLEFACTOR = 128
@@ -14,10 +16,11 @@ SHUFFLEFACTOR = 128
 class Carta:
     CLIP = []
     CLIP_POINTS = []
-    def __init__(self, html, xy, deque, face=FACE % ('ace', 'clubs')):
+    def __init__(self, html, xy, deque, face=('ace', 'clubs')):
         self.deque = deque
+        self.face = face
         self.clip = choice(Carta.CLIP)
-        ct = self.e_carta = html.IMG(src=face, width=CH, heigth=CV, Class=self.clip)
+        ct = self.e_carta = html.IMG(src=FACE % face, width=CH, heigth=CV, Class=self.clip)
         self.position(xy)
         ct.style.position = "absolute"
         ct.style.left, ct.style.top = xy
@@ -43,7 +46,7 @@ class Carta:
         self._clicou = lambda x: None
 
     def voa(self, evento):
-        self.deque.voa()
+        self.deque.voa(evento, self)
 
     def voar(self, delta):
         dx, dy = delta
@@ -66,25 +69,56 @@ class Carta:
 
 class Deque:
     def __init__(self, html, tela):
+        def set_id(gid):
+            self.gid = gid
+            print(gid)
         self.tela = tela
         self.count = 0
         self._voa = self.voar
+        self._cartear = self.cartear
         self.deque = [
-            Carta(html, ((n*13+x)*PA, 50), self, FACE % (CARDS[x], naipe))
+            Carta(html, ((n*13+x)*PA, 50), self, (CARDS[x], naipe))
             for n, naipe in enumerate(NAIPES) for x in range(13)]
+        self.send('getid', {}, set_id, "GET")
 
-    def novoa(self):
-        [carta.voar((100, 100)) for carta in self.deque[::-1]]
+    def send(self, operation, data, action=lambda t: None, method="POST"):
+        def on_complete(req):
+            if req.status==200 or req.status==0:
+                print( req.text)
+                action(req.text)
+            else:
+                print( "error "+req.text)
+        req = ajax()
+        req.on_complete = on_complete
+        url = "/record/"+ operation
+        req.open(method,url,True)
+        req.set_header("Content-Type","application/json; charset=utf-8")
+        req.send(data)
 
-    def voa(self):
-        self._voa()
+    def voa(self, evento, carta):
+        self._voa(evento, carta)
 
-    def voar(self):
+    def pontua(self, evento, carta, ponto, valor):
+        carta = '_'.join(carta.face)
+        casa = '_'.join([str(evento.x), str(evento.y)])
+        data = dict(doc_id=self.gid, carta=carta, casa=casa, move="ok", ponto=ponto, valor=valor)
+        self.send('store',data )
+
+    def cartear(self, evento, cartaid):
+        deque = self.deque[::-1]
+        self.count = 0
+        self._cartear = lambda : None
+        shuffle(deque)
+        [carta.voaraqui((10+(i%13)*PB, 10+(i//13)*PB*2)) for i, carta in enumerate(deque)]
+        self.pontua(evento, cartaid, 1, 'ct')
+
+    def voar(self, evento, carta):
         deque = self.deque[::-1]
         self.count = 0
         self._voa = lambda : None
         shuffle(deque)
-        [carta.voaraqui((10+i*PA, 450)) for i, carta in enumerate(deque)]
+        [carta.voaraqui((10+i*PA, 550)) for i, carta in enumerate(deque)]
+        self.pontua(evento, carta, 2, 'em')
 
     def __le__(self, other):
         self.tela <= other
@@ -97,7 +131,7 @@ class Deque:
     def conta(self):
         self.count += 1
         if self.count >= 51:
-            self._voa = self.centra
+            self._voa = self._cartear
 
 
 def main(html, doc, svg):

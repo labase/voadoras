@@ -28,6 +28,12 @@ def hello_world():
     #redirect('/tuple/index.html')
     redirect('/voa/voa.html')
 
+@route('/ei')
+def go_eica():
+    #redirect('/carinhas/carinhas.html')
+    #redirect('/tuple/index.html')
+    redirect('/eica/test.html')
+
 
 @get('/static/<filename:re:.*\.css>')
 def stylecss(filename):
@@ -61,7 +67,7 @@ def score():
         return fake
 
 @post('/record/store')
-def read():
+def store():
     try:
         json = retrieve_params(request.params)
         record_id = json.keys()[0]
